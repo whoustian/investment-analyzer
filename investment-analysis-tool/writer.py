@@ -8,9 +8,12 @@ LETTER_TEMPLATE = """
 This month saw activity across {{ transaction_count }} transactions. 
 
 **Portfolio Snapshot:**
-- **Total Value:** ${{ "{:,.2f}".format(performance.total_value) }}
-- **Total Gain/Loss:** ${{ "{:,.2f}".format(performance.total_gain_loss) }} ({{ "%.2f"|format(performance.total_gain_loss_pct) }}%)
-- **Dividend Income:** ${{ "{:,.2f}".format(performance.total_dividends) }}
+
+**Total Value:** ${{ "{:,.2f}".format(performance.total_value) }}
+
+**Total Gain/Loss:** ${{ "{:,.2f}".format(performance.total_gain_loss) }} ({{ "%.2f"|format(performance.total_gain_loss_pct) }}%)
+
+**Dividend Income:** ${{ "{:,.2f}".format(performance.total_dividends) }}
 
 ## Asset Allocation
 {%- for type, value in allocation.items() %}
