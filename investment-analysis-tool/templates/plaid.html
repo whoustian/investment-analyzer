@@ -58,6 +58,13 @@
 <body>
     <div class="container">
         <h1>Connect Financial Account</h1>
+
+        <div style="margin-bottom: 1rem;">
+            <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #666;">
+                Environment: <strong>{{ plaid_env|upper }}</strong>
+            </span>
+        </div>
+
         <p>Securely connect your Fidelity or Robinhood account using Plaid.</p>
         <button id="link-button">Connect with Plaid</button>
         <div id="status" class="status"></div>

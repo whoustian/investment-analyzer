@@ -27,7 +27,8 @@ def robinhood():
 
 @app.route('/plaid', methods=['GET'])
 def plaid_page():
-    return render_template('plaid.html')
+    plaid_env = os.getenv('PLAID_ENV', 'sandbox')
+    return render_template('plaid.html', plaid_env=plaid_env)
 
 @app.route('/create_link_token', methods=['POST'])
 def create_link_token():
