@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Investment Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <header>
+                <h1>Investment Analysis</h1>
+                <p class="subtitle">Generate your monthly portfolio letter.</p>
+            </header>
+
+            <form action="/analyze_fidelity" method="post" enctype="multipart/form-data" class="upload-form">
+                <div class="file-input-group">
+                    <label for="history_file">
+                        <span class="icon">📄</span>
+                        <span class="label-text">Upload Accounts History (CSV)</span>
+                    </label>
+                    <input type="file" id="history_file" name="history_file" accept=".csv" required>
+                </div>
+
+                <div class="file-input-group">
+                    <label for="positions_file">
+                        <span class="icon">📊</span>
+                        <span class="label-text">Upload Portfolio Positions (CSV)</span>
+                    </label>
+                    <input type="file" id="positions_file" name="positions_file" accept=".csv" required>
+                </div>
+
+                <button type="submit" class="cta-button">Generate Letter ✨</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

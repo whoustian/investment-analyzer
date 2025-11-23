@@ -6,25 +6,30 @@ from writer import render_letter
 
 def main():
     # Check for file
-    file_path = 'c:/Users/whous/.gemini/antigravity/scratch/investment-analysis-toolAccounts_History.csv'
-    if not os.path.exists(file_path):
-        print(f"File not found at {file_path}. Using mock data for demonstration.")
-        file_path = 'c:/Users/whous/.gemini/antigravity/scratch/investment-analysis-tool/mock_data.csv'
+    history_path = 'c:/Users/whous/.gemini/antigravity/scratch/investment-analysis-tool/Accounts_History.csv'
+    positions_path = 'c:/Users/whous/.gemini/antigravity/scratch/investment-analysis-tool/Portfolio_Positions_Nov-22-2025.csv'
+    
+    if not os.path.exists(history_path):
+        print(f"History file not found at {history_path}. Using mock data for demonstration.")
+        history_path = 'c:/Users/whous/.gemini/antigravity/scratch/investment-analysis-tool/mock_data.csv'
 
-    analyzer = PortfolioAnalyzer(file_path)
+    analyzer = PortfolioAnalyzer(history_path, positions_path)
     if analyzer.load_data():
         print("Data loaded successfully.")
         holdings = analyzer.calculate_holdings()
         perf = analyzer.analyze_performance()
         tweaks = analyzer.generate_tweaks()
         factors = analyzer.get_factor_exposure()
+        allocation = analyzer.get_asset_allocation()
         
         data = {
             "date": datetime.now().strftime("%B %Y"),
             "transaction_count": perf['transaction_count'],
             "performance": perf,
             "holdings": holdings,
+            "holdings_data": analyzer.holdings_data,
             "factors": factors,
+            "allocation": allocation,
             "tweaks": tweaks
         }
         

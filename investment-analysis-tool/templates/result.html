@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Monthly Letter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container result-container">
+        <div class="glass-card result-card">
+            <header>
+                <h1>Monthly Letter</h1>
+                <div class="actions">
+                    <a href="/" class="secondary-button">← Start Over</a>
+                    <form action="/download" method="post" style="display: inline;">
+                        <input type="hidden" name="content" value="{{ letter_md }}">
+                        <button type="submit" class="cta-button small">Download Markdown ⬇️</button>
+                    </form>
+                </div>
+            </header>
+
+            <div class="letter-content">
+                {{ letter_html | safe }}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

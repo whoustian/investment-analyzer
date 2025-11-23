@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robinhood Analysis - Antigravity</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <header>
+                <h1>Robinhood Analysis</h1>
+                <p class="subtitle">Upload your Robinhood orders CSV.</p>
+            </header>
+
+            <form action="/analyze_robinhood" method="post" enctype="multipart/form-data" class="upload-form">
+                <div class="file-input-group">
+                    <label for="robinhood_file">
+                        <span class="icon">🏹</span>
+                        <span class="label-text">Upload Orders CSV</span>
+                    </label>
+                    <input type="file" id="robinhood_file" name="robinhood_file" accept=".csv" required>
+                </div>
+
+                <button type="submit" class="cta-button">Generate Letter ✨</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="/" class="secondary-button">← Back to Selection</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
