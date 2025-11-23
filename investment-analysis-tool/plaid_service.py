@@ -9,6 +9,8 @@ from plaid.model.investments_holdings_get_request import InvestmentsHoldingsGetR
 from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.products import Products
 from plaid.model.country_code import CountryCode
+from plaid.model.sandbox_public_token_create_request import SandboxPublicTokenCreateRequest
+from plaid.model.sandbox_public_token_create_request_options import SandboxPublicTokenCreateRequestOptions
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -33,6 +35,7 @@ def get_plaid_client():
             'clientId': PLAID_CLIENT_ID,
             'secret': PLAID_SECRET,
         }
+        # verify_ssl=False # Uncomment if SSL issues suspected
     )
     api_client = plaid.ApiClient(configuration)
     return plaid_api.PlaidApi(api_client)
@@ -76,3 +79,16 @@ def get_transactions(access_token, start_date, end_date):
     )
     response = client.transactions_get(request)
     return response.to_dict()
+
+def create_sandbox_public_token(institution_id='ins_109508', initial_products=[Products('investments'), Products('transactions')], override_username='user_good', override_password='pass_good'):
+    client = get_plaid_client()
+    request = SandboxPublicTokenCreateRequest(
+        institution_id=institution_id,
+        initial_products=initial_products,
+        options=SandboxPublicTokenCreateRequestOptions(
+            override_username=override_username,
+            override_password=override_password
+        )
+    )
+    response = client.sandbox_public_token_create(request)
+    return response['public_token']
