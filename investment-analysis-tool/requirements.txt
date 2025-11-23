@@ -1,3 +1,6 @@
 pandas
 numpy
 jinja2
+flask
+plaid-python
+python-dotenv

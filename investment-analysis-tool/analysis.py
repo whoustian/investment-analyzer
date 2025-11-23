@@ -135,6 +135,75 @@ class PortfolioAnalyzer:
             print(f"Error loading Robinhood data: {e}")
             return False
 
+    def load_plaid_data(self, holdings_response, transactions_response):
+        try:
+            # Process Holdings
+            self.holdings = {}
+            self.holdings_data = {}
+            
+            securities = {s['security_id']: s for s in holdings_response.get('securities', [])}
+            
+            for holding in holdings_response.get('holdings', []):
+                security_id = holding['security_id']
+                security = securities.get(security_id, {})
+                symbol = security.get('ticker_symbol')
+                
+                if not symbol:
+                    continue
+                    
+                qty = holding['quantity']
+                price = holding['institution_price']
+                value = holding['institution_value']
+                cost_basis = holding.get('cost_basis', 0)
+                
+                gain_loss_pct = 0.0
+                if cost_basis and cost_basis > 0:
+                    total_cost = cost_basis * qty
+                    if total_cost > 0:
+                        gain_loss_pct = ((value - total_cost) / total_cost) * 100
+                
+                self.holdings[symbol] = qty
+                self.holdings_data[symbol] = {
+                    'Current Value': value,
+                    'Investment Type': security.get('type', 'Unknown'),
+                    'Total Gain/Loss Percent': gain_loss_pct
+                }
+            
+            # Create positions_df
+            self.positions_df = pd.DataFrame([
+                {'Symbol': k, 'Current Value': self.holdings_data[k]['Current Value'], 'Investment Type': self.holdings_data[k]['Investment Type']}
+                for k in self.holdings
+            ])
+            
+            # Process Transactions for History
+            history_records = []
+            for t in transactions_response.get('transactions', []):
+                # We need to map Plaid transaction types to our Action types if possible
+                # For now, we'll just store the raw data and try to infer
+                date = t['date']
+                amount = t['amount']
+                name = t['name']
+                
+                history_records.append({
+                    'Date': pd.to_datetime(date),
+                    'Action': name, # Placeholder
+                    'Amount': amount,
+                    'Symbol': '', # Plaid transactions might not link directly to symbols easily without more processing
+                    'Quantity': 0
+                })
+                
+            if history_records:
+                self.history_df = pd.DataFrame(history_records)
+                self.history_df = self.history_df.sort_values('Date')
+            else:
+                self.history_df = pd.DataFrame(columns=['Date', 'Action', 'Amount', 'Symbol', 'Quantity'])
+                
+            return True
+            
+        except Exception as e:
+            print(f"Error loading Plaid data: {e}")
+            return False
+
     def calculate_holdings(self):
         if self.positions_df is not None:
             # Use the accurate positions file

@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, send_file, Response
+from flask import Flask, render_template, request, send_file, Response, jsonify
 import os
 import markdown
-from datetime import datetime
+from datetime import datetime, timedelta
 from analysis import PortfolioAnalyzer
 from writer import render_letter
+import plaid_service
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -23,6 +24,55 @@ def fidelity():
 @app.route('/robinhood', methods=['GET'])
 def robinhood():
     return render_template('robinhood.html')
+
+@app.route('/plaid', methods=['GET'])
+def plaid_page():
+    return render_template('plaid.html')
+
+@app.route('/create_link_token', methods=['POST'])
+def create_link_token():
+    try:
+        # In a real app, use a unique user ID from session/db
+        user_id = "user_good" 
+        link_token = plaid_service.create_link_token(user_id)
+        return jsonify({'link_token': link_token})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/exchange_public_token', methods=['POST'])
+def exchange_public_token():
+    try:
+        public_token = request.json.get('public_token')
+        access_token = plaid_service.exchange_public_token(public_token)
+        return jsonify({'success': True, 'access_token': access_token})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/analyze_plaid', methods=['POST'])
+def analyze_plaid():
+    try:
+        access_token = request.json.get('access_token')
+        if not access_token:
+            return "Missing access token", 400
+            
+        # Fetch data
+        holdings_response = plaid_service.get_holdings(access_token)
+        
+        # Fetch transactions for the last year
+        start_date = (datetime.now() - timedelta(days=365)).date()
+        end_date = datetime.now().date()
+        transactions_response = plaid_service.get_transactions(access_token, start_date, end_date)
+        
+        # Analyze
+        analyzer = PortfolioAnalyzer(None, None) # No files needed
+        if analyzer.load_plaid_data(holdings_response, transactions_response):
+            return generate_report(analyzer)
+        else:
+            return "Error processing Plaid data.", 500
+            
+    except Exception as e:
+        print(f"Analysis error: {e}")
+        return f"Analysis error: {e}", 500
 
 @app.route('/analyze_fidelity', methods=['POST'])
 def analyze_fidelity():
