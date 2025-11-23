@@ -21,9 +21,10 @@
                 <div class="file-input-group">
                     <label for="robinhood_file">
                         <span class="icon">🏹</span>
-                        <span class="label-text">Upload Orders CSV</span>
+                        <span class="label-text" id="robinhood_label">Upload Orders CSV</span>
                     </label>
-                    <input type="file" id="robinhood_file" name="robinhood_file" accept=".csv" required>
+                    <input type="file" id="robinhood_file" name="robinhood_file" accept=".csv" required
+                        onchange="updateLabel(this, 'robinhood_label')">
                 </div>
 
                 <button type="submit" class="cta-button">Generate Letter ✨</button>
@@ -34,6 +35,17 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function updateLabel(input, labelId) {
+            const label = document.getElementById(labelId);
+            if (input.files && input.files.length > 0) {
+                label.textContent = input.files[0].name;
+                label.parentElement.parentElement.style.borderColor = '#38bdf8';
+                label.parentElement.parentElement.style.background = 'rgba(56, 189, 248, 0.1)';
+            }
+        }
+    </script>
 </body>
 
 </html>

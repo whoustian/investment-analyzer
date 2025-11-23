@@ -63,6 +63,7 @@ class PortfolioAnalyzer:
                 print(f"Error loading positions data: {e}")
                 # We can continue without positions, just falling back to history
         
+        return True
     def load_robinhood_data(self):
         try:
             # Robinhood CSVs usually have: provider_id, period, begin_execution_date, end_execution_date, settlement_date, id, instrument_url, symbol, side, quantity, price, state, type, trigger, price_arg, stop_price, fees, amount
@@ -133,6 +134,78 @@ class PortfolioAnalyzer:
         except Exception as e:
             print(f"Error loading Robinhood data: {e}")
             return False
+
+    def calculate_holdings(self):
+        if self.positions_df is not None:
+            # Use the accurate positions file
+            # If holdings were already calculated (e.g. by load_robinhood_data), skip
+            if not self.holdings:
+                self.holdings = {}
+                self.holdings_data = {}
+                for _, row in self.positions_df.iterrows():
+                    symbol = str(row.get('Symbol', ''))
+                    if not symbol or symbol == 'nan' or 'Pending activity' in symbol: 
+                        continue
+                    
+                    # Clean symbol (remove ** or similar artifacts)
+                    symbol = symbol.replace('*', '')
+                    
+                    qty = row.get('Quantity', 0)
+                    self.holdings[symbol] = qty
+                    self.holdings_data[symbol] = row.to_dict()
+        else:
+            # Fallback to history reconstruction
+            current_holdings = {}
+            for _, row in self.history_df.iterrows():
+                action = str(row.get('Action', '')).upper()
+                symbol = str(row.get('Symbol', ''))
+                qty = row.get('Quantity', 0)
+                try:
+                    if isinstance(qty, str):
+                        qty = float(qty.replace(',', ''))
+                    if pd.isna(qty): 
+                        qty = 0
+                    qty = float(qty)
+                except ValueError:
+                    qty = 0
+                
+                if 'BOUGHT' in action or 'REINVESTMENT' in action:
+                    current_holdings[symbol] = current_holdings.get(symbol, 0) + qty
+                elif 'SOLD' in action:
+                    current_holdings[symbol] = current_holdings.get(symbol, 0) + qty
+                    if current_holdings[symbol] <= 0:
+                        if symbol in current_holdings: 
+                            del current_holdings[symbol]
+            
+            self.holdings = current_holdings
+            
+        return self.holdings
+
+    def analyze_performance(self):
+        # Dividends from history
+        dividends = 0
+        if self.history_df is not None:
+            dividends = self.history_df[self.history_df['Action'].str.contains('DIVIDEND', case=False, na=False)]['Amount'].sum()
+        
+        # Portfolio Value and P&L from Positions
+        total_value = 0
+        total_gain_loss = 0
+        total_gain_loss_pct = 0
+        
+        if self.positions_df is not None:
+            total_value = self.positions_df['Current Value'].sum()
+            if 'Total Gain/Loss Dollar' in self.positions_df.columns:
+                total_gain_loss = self.positions_df['Total Gain/Loss Dollar'].sum()
+                if total_value - total_gain_loss != 0:
+                    total_gain_loss_pct = (total_gain_loss / (total_value - total_gain_loss)) * 100
+        
+        return {
+            "total_dividends": dividends,
+            "transaction_count": len(self.history_df) if self.history_df is not None else 0,
+            "total_value": total_value,
+            "total_gain_loss": total_gain_loss,
+            "total_gain_loss_pct": total_gain_loss_pct
+        }
 
     def get_asset_allocation(self):
         if self.positions_df is None:

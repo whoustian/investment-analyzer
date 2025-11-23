@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity Investment Tool</title>
+    <title>Fidelity Analysis - Antigravity</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
@@ -13,7 +13,7 @@
     <div class="container">
         <div class="glass-card">
             <header>
-                <h1>Investment Analysis</h1>
+                <h1>Fidelity Analysis</h1>
                 <p class="subtitle">Generate your monthly portfolio letter.</p>
             </header>
 
@@ -21,23 +21,40 @@
                 <div class="file-input-group">
                     <label for="history_file">
                         <span class="icon">📄</span>
-                        <span class="label-text">Upload Accounts History (CSV)</span>
+                        <span class="label-text" id="history_label">Upload Accounts History (CSV)</span>
                     </label>
-                    <input type="file" id="history_file" name="history_file" accept=".csv" required>
+                    <input type="file" id="history_file" name="history_file" accept=".csv" required
+                        onchange="updateLabel(this, 'history_label')">
                 </div>
 
                 <div class="file-input-group">
                     <label for="positions_file">
                         <span class="icon">📊</span>
-                        <span class="label-text">Upload Portfolio Positions (CSV)</span>
+                        <span class="label-text" id="positions_label">Upload Portfolio Positions (CSV)</span>
                     </label>
-                    <input type="file" id="positions_file" name="positions_file" accept=".csv" required>
+                    <input type="file" id="positions_file" name="positions_file" accept=".csv" required
+                        onchange="updateLabel(this, 'positions_label')">
                 </div>
 
                 <button type="submit" class="cta-button">Generate Letter ✨</button>
             </form>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="/" class="secondary-button">← Back to Selection</a>
+            </div>
         </div>
     </div>
+
+    <script>
+        function updateLabel(input, labelId) {
+            const label = document.getElementById(labelId);
+            if (input.files && input.files.length > 0) {
+                label.textContent = input.files[0].name;
+                label.parentElement.parentElement.style.borderColor = '#38bdf8';
+                label.parentElement.parentElement.style.background = 'rgba(56, 189, 248, 0.1)';
+            }
+        }
+    </script>
 </body>
 
 </html>
