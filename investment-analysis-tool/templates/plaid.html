@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect with Plaid</title>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            background-color: #000;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        .status {
+            margin-top: 1rem;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Connect Financial Account</h1>
+
+        <div style="margin-bottom: 1rem;">
+            <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #666;">
+                Environment: <strong>{{ plaid_env|upper }}</strong>
+            </span>
+        </div>
+
+        <p>Securely connect your Fidelity or Robinhood account using Plaid.</p>
+        <button id="link-button">Connect with Plaid</button>
+        <div id="status" class="status"></div>
+
+        <div style="margin-top: 2rem;">
+            <a href="/" style="color: #666; text-decoration: none; font-size: 14px;">← Back to Selection</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('link-button').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = 'Initializing Plaid Link...';
+
+            try {
+                const response = await fetch('/create_link_token', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.error) {
+                    statusDiv.textContent = 'Error: ' + data.error;
+                    return;
+                }
+
+                const handler = Plaid.create({
+                    token: data.link_token,
+                    onSuccess: async (public_token, metadata) => {
+                        statusDiv.textContent = 'Authenticating...';
+                        const exchangeResponse = await fetch('/exchange_public_token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ public_token: public_token })
+                        });
+                        const exchangeData = await exchangeResponse.json();
+
+                        if (exchangeData.success) {
+                            statusDiv.textContent = 'Connected! Analyzing data...';
+                            // Trigger analysis
+                            const analysisResponse = await fetch('/analyze_plaid', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ access_token: exchangeData.access_token })
+                            });
+
+                            if (analysisResponse.ok) {
+                                const html = await analysisResponse.text();
+                                document.open();
+                                document.write(html);
+                                document.close();
+                            } else {
+                                statusDiv.textContent = 'Error analyzing data.';
+                            }
+                        } else {
+                            statusDiv.textContent = 'Error exchanging token.';
+                        }
+                    },
+                    onExit: (err, metadata) => {
+                        if (err) statusDiv.textContent = 'Connection failed or cancelled.';
+                        else statusDiv.textContent = '';
+                    },
+                });
+
+                handler.open();
+
+            } catch (e) {
+                console.error(e);
+                statusDiv.textContent = 'An unexpected error occurred.';
+            }
+        });
+    </script>
+</body>
+
+</html>

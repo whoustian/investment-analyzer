@@ -3,3 +3,5 @@ numpy
 jinja2
 flask
 markdown
+plaid-python
+python-dotenv

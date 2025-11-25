@@ -5,7 +5,7 @@ from analysis import PortfolioAnalyzer
 from writer import render_letter
 
 def main():
-    # Check for file
+    # Check for file'?????????;./////
     history_path = 'c:/Users/whous/.gemini/antigravity/scratch/investment-analysis-tool/Accounts_History.csv'
     positions_path = 'c:/Users/whous/.gemini/antigravity/scratch/investment-analysis-tool/Portfolio_Positions_Nov-22-2025.csv'
     
