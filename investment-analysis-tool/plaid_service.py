@@ -29,6 +29,9 @@ def get_plaid_client():
     else:
         host = plaid.Environment.Sandbox
 
+    if not PLAID_CLIENT_ID or not PLAID_SECRET:
+        raise ValueError("PLAID_CLIENT_ID and PLAID_SECRET must be set in the environment variables.")
+
     configuration = plaid.Configuration(
         host=host,
         api_key={
